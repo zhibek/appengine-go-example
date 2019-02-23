@@ -5,10 +5,25 @@ import (
 	"log"
 	"net/http"
 	"os"
+
+	"github.com/go-chi/chi"
+
+	"github.com/zhibek/appengine-go-example/example"
 )
 
 func main() {
-	http.HandleFunc("/", indexHandler)
+	r := chi.NewRouter()
+
+	r.Route("/example", func(r chi.Router) {
+		r.Get("/", example.ListHandler)
+		r.Post("/", example.CreateHandler)
+		r.Route("/{exampleId}", func(r chi.Router) {
+			r.Use(example.RouteIdParser)
+			r.Get("/", example.GetHandler)
+			r.Put("/", example.UpdateHandler)
+			r.Delete("/", example.DeleteHandler)
+		})
+	})
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -17,9 +32,5 @@ func main() {
 	}
 
 	log.Printf("Listening on port %s", port)
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", port), nil))
-}
-
-func indexHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "Index")
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", port), r))
 }
