@@ -40,6 +40,8 @@ RUN set -eux; \
     	export PATH="/usr/local/go/bin:$PATH"; \
     	go version
 
+RUN pip install -U grpcio
+
 ENV PATH /usr/local/go/bin:$PATH
 
 VOLUME ["/root/.config"]

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -21,5 +22,27 @@ func main() {
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "Index")
+
+	ctx := context.Background()
+
+	// Save new "Demo" entity to datastore
+	newDemo := &Demo{Name: "Test"}
+	newDemo, err := CreateDemo(ctx, newDemo)
+	if err != nil {
+		log.Printf("Error creating entity: %s", err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	log.Printf("Created entity with ID %s", newDemo.ID)
+
+	// Fetch "Demo" entity from datastore
+	retrievedDemo, err := FetchDemo(ctx, newDemo.ID)
+	if err != nil {
+		log.Printf("Error fetching entity: %s", err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	log.Printf("Fetched entity with ID %s", newDemo.ID)
+
+	fmt.Fprint(w, retrievedDemo.Name)
 }
